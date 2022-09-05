@@ -3,14 +3,14 @@ package pro.sky.HW15algorithms2;
 import java.util.Arrays;
 
 public class IntegerListImpl implements IntegerList {
-    private final Integer[] repository; // поле - хранилище строк в массиве
-    private int size; // поле - размер массива
+    private final Integer[] repository;
+    private int size;
 
-    public IntegerListImpl() { // конструктор пустой, задаем количество элементов
+    public IntegerListImpl() {
         repository = new Integer[10];
     }
 
-    public IntegerListImpl(int initSize) { // через конструктор задаем стартовый размер массива
+    public IntegerListImpl(int initSize) {
         repository = new Integer[initSize];
     }
 
@@ -19,7 +19,7 @@ public class IntegerListImpl implements IntegerList {
         checkSize();
         checkItem(item);
         repository[size++] = item;
-        return item;// чтобы видеть что добавлено
+        return item;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class IntegerListImpl implements IntegerList {
         checkItem(item);
         checkIndex(index);
         if (index == size){
-            repository[size++] = item; //сразу увеличиваем размер, т.к. проверки выполнены выше
+            repository[size++] = item;
             return item;
         }
         System.arraycopy(repository, index, repository, index + 1, index - size); // сдвиг всех элементов
@@ -41,21 +41,21 @@ public class IntegerListImpl implements IntegerList {
     public Integer set(int index, Integer item) {
         checkItem(item);
         checkIndex(index);
-        repository[index] = item; //затираем значение, новое добавляем в ячейку
+        repository[index] = item;
         return item;
     }
 
     @Override
     public Integer remove(Integer item) {
         checkItem(item);
-        int index = indexOf(item); // находим индекс элемента
+        int index = indexOf(item);
         return remove(index);
     }
 
     @Override
     public Integer remove(int index) {
         checkIndex(index);
-        Integer item = repository[index]; // здесь мы берем элемент, который будем удалять
+        Integer item = repository[index];
         if(index != size) {
             System.arraycopy(repository, index + 1, repository, index, size - index); // сдвиг влево
         }
@@ -65,8 +65,23 @@ public class IntegerListImpl implements IntegerList {
 
     @Override
     public boolean contains(Integer item) {
-        return indexOf(item) != -1; // если значение отличное от дефолтного,
-        // то элемент находится внутри нашей коллекции
+        checkItem(item);
+        Integer[] repositoryCopy = toArray(); // toArray дает копию массива, поэтому работа идет с новым массивом
+        sortInsertion(repositoryCopy); // сортировка
+        int min = 0; // метод бинарного поиска
+        int max = repositoryCopy.length - 1;
+        while (min <= max) {
+            int mid = (min + max) / 2;
+            if (item.equals(repositoryCopy[mid])) {
+                return true;
+            }
+            if (item < repositoryCopy[mid]) {
+                max = mid - 1;
+            } else {
+                min = mid +1;
+            }
+        }
+        return indexOf(item) != -1;
     }
 
     @Override
@@ -121,19 +136,30 @@ public class IntegerListImpl implements IntegerList {
         return Arrays.copyOf(repository, size);
     }
 
-    private void checkItem (Integer item){ // проверка на null объекта
+    private void checkItem (Integer item){
         if (item == null){
             throw new NullItemException();
         }
     }
-    private void checkSize (){ // проверка size
+    private void checkSize (){
         if (size == repository.length){
             throw new FullRepositoryException();
         }
     }
-    private void checkIndex (int index){ // проверка индекса
+    private void checkIndex (int index){
         if (index < 0 || index > size){
             throw new InvalidIndexException();
+        }
+    }
+    private void sortInsertion(Integer[] arr) { //самый быстрый способ сортировки
+        for (int i = 1; i < arr.length; i++) {
+            int temp = arr[i];
+            int j = i;
+            while (j > 0 && arr[j - 1] >= temp) {
+                arr[j] = arr[j - 1];
+                j--;
+            }
+            arr[j] = temp;
         }
     }
 }
